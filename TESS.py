@@ -5,7 +5,6 @@ import librosa
 import numpy as np
 import base64
 import pickle
-import sounddevice as sd
 from scipy.io.wavfile import write
 from tensorflow.keras.models import load_model
 import os
@@ -94,7 +93,7 @@ def predict_emotion(contents, filename, n_clicks):
     elif n_clicks is not None and n_clicks > 0:
         # Recording parameters
         duration = 3  # adjust duration if necessary
-        default_sr = sd.query_devices(None, 'input')['default_samplerate']
+        default_sr = 44100
         channels = 1
 
         print("Recording started...")
@@ -170,9 +169,9 @@ def predict_emotion(contents, filename, n_clicks):
 
 if __name__ == "__main__":
     # Load the trained model and encoder
-    model = load_model("TESS_latest_trained_model.h5")  # Replace with your trained model file path
+    model = load_model("C:/Users/soumi/Downloads/TESS_latest_trained_model.h5")  # Replace with your trained model file path
 
-    with open("TESS_encoder.pkl", 'rb') as f:
+    with open("C:/Users/soumi/Downloads/TESS_encoder.pkl", 'rb') as f:
         enc = pickle.load(f)
 
     app.run_server(debug=False, port=1540)
