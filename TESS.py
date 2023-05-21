@@ -170,9 +170,9 @@ def predict_emotion(contents, filename, n_clicks):
 
 if __name__ == "__main__":
     # Load the trained model and encoder
-    model = load_model("C:/Users/soumi/Downloads/TESS_latest_trained_model.h5")  # Replace with your trained model file path
+    model = load_model("TESS_latest_trained_model.h5")  # Replace with your trained model file path
 
-    with open("C:/Users/soumi/Downloads/TESS_encoder.pkl", 'rb') as f:
+    with open("TESS_encoder.pkl", 'rb') as f:
         enc = pickle.load(f)
 
     app.run_server(debug=False, port=1540)
