@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 # Create the Dash app
 app = dash.Dash(__name__, title='Toronto Speech Emotion Recognizer')
-
+server = app.server
 # Create the uploaded_audio directory if it doesn't exist
 if not os.path.exists("uploaded_audio"):
     os.makedirs("uploaded_audio")
