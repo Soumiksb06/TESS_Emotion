@@ -11,4 +11,4 @@ pycryptodomex
 gunicorn
 pandas
 seaborn
-PortAudio
+pyaudio
