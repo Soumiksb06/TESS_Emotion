@@ -3,7 +3,6 @@ dash-core-components
 dash-html-components
 librosa
 numpy
-base64
 pickle
 sounddevice
 scipy
