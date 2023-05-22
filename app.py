@@ -6,13 +6,14 @@ import numpy as np
 import base64
 import pickle
 from scipy.io.wavfile import write
-from tensorflow.keras.models import load_model
+import tensorflow as tf
+import tensorflow.lite as tflite
 import os
 import plotly.graph_objects as go
 
 # Create the Dash app
 app = dash.Dash(__name__, title='Toronto Speech Emotion Recognizer')
-server = app.server
+
 # Create the uploaded_audio directory if it doesn't exist
 if not os.path.exists("uploaded_audio"):
     os.makedirs("uploaded_audio")
@@ -73,6 +74,19 @@ def extract_mfcc(audio, sr):
     return mfcc
 
 
+# Convert Keras model to TensorFlow Lite
+keras_model_path = "C:/Users/soumi/Downloads/TESS_latest_trained_model.h5"  # Replace with your Keras model file path
+model = tf.keras.models.load_model(keras_model_path)
+converter = tflite.TFLiteConverter.from_keras_model(model)
+converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+converter._experimental_lower_tensor_list_ops = False
+tflite_model = converter.convert()
+
+# Save the TensorFlow Lite model to a file
+tflite_model_path = "C:/Users/soumi/Downloads/TESS_latest_trained_model.tflite"  # Provide the desired output path
+with open(tflite_model_path, "wb") as f:
+    f.write(tflite_model)
+
 
 @app.callback(
     dash.dependencies.Output('output-prediction', 'children'),
@@ -93,7 +107,7 @@ def predict_emotion(contents, filename, n_clicks):
     elif n_clicks is not None and n_clicks > 0:
         # Recording parameters
         duration = 3  # adjust duration if necessary
-        default_sr = 44100
+        default_sr = sd.query_devices(None, 'input')['default_samplerate']
         channels = 1
 
         print("Recording started...")
@@ -111,36 +125,29 @@ def predict_emotion(contents, filename, n_clicks):
 
     # Perform emotion prediction
     mfcc_features = extract_mfcc(audio_path, sr)
-    prediction = model.predict(mfcc_features)
-    predicted_label = enc.inverse_transform(prediction)
-    predicted_emotion = predicted_label[0][0].upper()
 
-    # Generate spectrogram
-    _, _, spectrogram = librosa.reassigned_spectrogram(audio, sr=sr)
+    # Convert mfcc_features to float32
+    mfcc_features = mfcc_features.astype(np.float32)
 
-    fig = go.Figure(data=go.Heatmap(
-        z=spectrogram,
-        colorscale='Hot',
-    ))
+    # Load the TensorFlow Lite model
+    interpreter = tf.lite.Interpreter(model_path=tflite_model_path)
+    interpreter.allocate_tensors()
 
-    fig.update_layout(
-        title='Spectrogram',
-        xaxis_title='Time',
-        yaxis_title='Frequency',
-    )
+    # Set the input tensor
+    input_details = interpreter.get_input_details()
+    interpreter.set_tensor(input_details[0]['index'], mfcc_features)
 
-    return (
-        html.H3(
-            f"The predicted emotion is: {predicted_emotion}",
-            style={'color': 'red', 'textAlign': 'center'}
-        ),
-        fig
-    )
+    # Run the inference
+    interpreter.invoke()
 
+    # Get the output tensor
+    output_details = interpreter.get_output_details()
+    prediction = interpreter.get_tensor(output_details[0]['index'])
 
-    # Perform emotion prediction
-    mfcc_features = extract_mfcc(audio_path, sr)
-    prediction = model.predict(mfcc_features)
+    # Load the label encoder
+    with open("C:/Users/soumi/Downloads/TESS_encoder.pkl", 'rb') as f:
+        enc = pickle.load(f)
+
     predicted_label = enc.inverse_transform(prediction)
     predicted_emotion = predicted_label[0][0].upper()
 
@@ -168,10 +175,4 @@ def predict_emotion(contents, filename, n_clicks):
 
 
 if __name__ == "__main__":
-    # Load the trained model and encoder
-    model = load_model("TESS_latest_trained_model.h5")  # Replace with your trained model file path
-
-    with open("TESS_encoder.pkl", 'rb') as f:
-        enc = pickle.load(f)
-
     app.run_server(debug=False, port=1540)
