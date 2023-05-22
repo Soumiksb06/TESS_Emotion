@@ -75,7 +75,7 @@ def extract_mfcc(audio, sr):
 
 
 # Convert Keras model to TensorFlow Lite
-keras_model_path = "C:/Users/soumi/Downloads/TESS_latest_trained_model.h5"  # Replace with your Keras model file path
+keras_model_path = "TESS_latest_trained_model.h5"  # Replace with your Keras model file path
 model = tf.keras.models.load_model(keras_model_path)
 converter = tflite.TFLiteConverter.from_keras_model(model)
 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
@@ -83,7 +83,7 @@ converter._experimental_lower_tensor_list_ops = False
 tflite_model = converter.convert()
 
 # Save the TensorFlow Lite model to a file
-tflite_model_path = "C:/Users/soumi/Downloads/TESS_latest_trained_model.tflite"  # Provide the desired output path
+tflite_model_path = "TESS_latest_trained_model.tflite"  # Provide the desired output path
 with open(tflite_model_path, "wb") as f:
     f.write(tflite_model)
 
