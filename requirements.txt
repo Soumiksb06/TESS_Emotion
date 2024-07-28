@@ -9,3 +9,4 @@ sounddevice
 tensorflow
 tensorflow_intel
 gunicorn
+streamlit
