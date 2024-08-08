@@ -1,6 +1,3 @@
-dash
-dash_core_components
-dash_html_components
 librosa
 numpy
 plotly
@@ -8,5 +5,6 @@ scipy
 sounddevice
 tensorflow
 tensorflow_intel
-gunicorn
 streamlit
+keras
+matplotlib
